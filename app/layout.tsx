@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./premium.css";
+import "./workspace.css";
 
 export const metadata: Metadata = {
   title: "ProjectPilot — AI Academic Project OS",
