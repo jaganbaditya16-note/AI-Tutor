@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
-import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AI Tutor",
-  description: "AI-powered academic project mentor",
+  title: "ProjectPilot — AI Academic Project OS",
+  description: "Plan, build, track and present academic projects with an AI project mentor.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <ClerkProvider><html lang="en"><body>{children}</body></html></ClerkProvider>;
+  return <html lang="en"><body>{children}</body></html>;
 }
