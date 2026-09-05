@@ -1,5 +1,12 @@
-import { SignUp } from "@clerk/nextjs";
+"use client";
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ArrowRight, Eye, EyeOff, Sparkles, UserPlus, Zap } from "lucide-react";
+import { createClient } from "@/lib/supabase/browser";
 
-export default function SignUpPage() {
-  return <main style={{minHeight:"100vh",display:"grid",placeItems:"center",padding:24}}><SignUp /></main>;
+export default function SignUpPage(){
+ const router=useRouter();const [name,setName]=useState("");const [email,setEmail]=useState("");const [password,setPassword]=useState("");const [show,setShow]=useState(false);const [error,setError]=useState("");const [message,setMessage]=useState("");const [loading,setLoading]=useState(false);
+ async function submit(e:FormEvent){e.preventDefault();setLoading(true);setError("");setMessage("");const {data,error}=await createClient().auth.signUp({email,password,options:{data:{full_name:name}}});if(error)setError(error.message);else if(data.session){router.push("/dashboard");router.refresh()}else setMessage("Account created. Check your email if confirmation is enabled.");setLoading(false)}
+ return <main className="auth-page"><div className="auth-visual"><div className="auth-brand"><div className="brand-mark"><Zap size={18}/></div><strong>ProjectPilot</strong></div><div><span className="hero-kicker"><Sparkles size={13}/> BUILT FOR AMBITIOUS STUDENTS</span><h1>Your project has a <em>co-pilot.</em></h1><p>From raw idea to final viva, one intelligent workspace keeps the whole journey on track.</p><div className="auth-points"><span>✦ Idea → scope → stack</span><span>✦ Auto-generated roadmap</span><span>✦ Risk prediction + mentorship</span></div></div></div><div className="auth-card"><div className="auth-icon"><UserPlus size={19}/></div><h2>Create your workspace</h2><p>Start building with an AI project team beside you.</p><form onSubmit={submit} className="auth-form"><label className="label">Full name</label><input className="input" required value={name} onChange={e=>setName(e.target.value)} placeholder="Your name"/><label className="label">Email</label><input className="input" type="email" required value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com"/><label className="label">Password</label><div className="password"><input className="input" type={show?"text":"password"} minLength={6} required value={password} onChange={e=>setPassword(e.target.value)} placeholder="At least 6 characters"/><button type="button" onClick={()=>setShow(!show)}>{show?<EyeOff size={17}/>:<Eye size={17}/>}</button></div>{error&&<div className="auth-error">{error}</div>}{message&&<div className="auth-success">{message}</div>}<button className="btn btn-primary auth-submit" disabled={loading}>{loading?"Creating…":<>Launch workspace <ArrowRight size={16}/></>}</button><p className="auth-switch">Already have an account? <Link href="/sign-in">Sign in</Link></p></form></div></main>
 }
