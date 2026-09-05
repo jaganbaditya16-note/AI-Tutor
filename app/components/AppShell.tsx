@@ -1,0 +1,49 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { BarChart3, Bot, CheckSquare, ChevronLeft, FolderKanban, LayoutDashboard, LogOut, Menu, Sparkles, X, Zap } from "lucide-react";
+import { createClient } from "@/lib/supabase/browser";
+
+const nav = [
+  ["Dashboard", "/dashboard", LayoutDashboard],
+  ["Projects", "/projects", FolderKanban],
+  ["AI Mentor", "/mentor", Bot],
+  ["Auto Planner", "/planner", Sparkles],
+  ["Tasks", "/tasks", CheckSquare],
+  ["Analytics", "/analytics", BarChart3],
+];
+
+export default function AppShell({ children, title, subtitle }: { children: React.ReactNode; title?: string; subtitle?: string }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("Student");
+
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data }) => {
+      setName(data.user?.user_metadata?.full_name || data.user?.email?.split("@")[0] || "Student");
+    });
+  }, []);
+
+  async function signOut() {
+    await createClient().auth.signOut();
+    router.push("/sign-in");
+    router.refresh();
+  }
+
+  return <div className="app-shell">
+    <aside className={`sidebar ${open ? "sidebar-open" : ""}`}>
+      <div className="brand"><div className="brand-mark"><Zap size={18}/></div><div><strong>ProjectPilot</strong><span>AI Academic OS</span></div><button className="mobile-close" onClick={() => setOpen(false)}><X size={20}/></button></div>
+      <div className="workspace"><span className="status-dot"/> Personal workspace</div>
+      <nav>{nav.map(([label, href, Icon]) => <Link key={href as string} href={href as string} onClick={() => setOpen(false)} className={pathname === href || pathname.startsWith(`${href}/`) ? "active" : ""}><Icon size={18}/><span>{label as string}</span>{label === "Auto Planner" && <b>AI</b>}</Link>)}</nav>
+      <div className="sidebar-bottom"><div className="mini-ai"><Sparkles size={17}/><div><strong>AI is watching</strong><span>Ready to catch project risks.</span></div></div><button className="signout" onClick={signOut}><LogOut size={17}/> Sign out</button></div>
+    </aside>
+    {open && <button className="overlay" onClick={() => setOpen(false)} aria-label="Close menu"/>}
+    <section className="main-area">
+      <header className="topbar"><button className="mobile-menu" onClick={() => setOpen(true)}><Menu size={21}/></button><div><div className="eyebrow">AI GUIDED PROJECT PROGRESS PLATFORM</div>{title && <h1>{title}</h1>}{subtitle && <p>{subtitle}</p>}</div><div className="user-pill"><div className="avatar">{name.slice(0,1).toUpperCase()}</div><span>{name}</span><ChevronLeft size={15} className="chevron"/></div></header>
+      <main className="content">{children}</main>
+    </section>
+  </div>;
+}
