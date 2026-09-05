@@ -3,6 +3,7 @@ import "./globals.css";
 import "./premium.css";
 import "./workspace.css";
 import "./extras.css";
+import "./insights.css";
 
 export const metadata: Metadata = {
   title: "ProjectPilot — AI Academic Project OS",
