@@ -7,11 +7,17 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-anon-key
+      SUPABASE_SERVICE_ROLE_KEY: ci-service-key
+      OPENROUTER_API_KEY: ci-ai-key
+      OPENROUTER_MODEL: openai/gpt-5-mini
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
           cache: npm
       - run: npm install
       - run: npm run build
