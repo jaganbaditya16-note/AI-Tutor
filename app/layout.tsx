@@ -4,6 +4,7 @@ import "./premium.css";
 import "./workspace.css";
 import "./extras.css";
 import "./insights.css";
+import "./viva.css";
 
 export const metadata: Metadata = {
   title: "ProjectPilot — AI Academic Project OS",
