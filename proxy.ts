@@ -1,7 +1,15 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const publicRoutes = ["/", "/sign-in", "/sign-up", "/api/health"];
+const publicRoutes = [
+  "/",
+  "/sign-in",
+  "/sign-up",
+  "/faculty/sign-in",
+  "/faculty/invite",
+  "/admin/sign-in",
+  "/api/health",
+];
 function isPublic(pathname: string) { return publicRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`)); }
 
 export async function proxy(request: NextRequest) {
