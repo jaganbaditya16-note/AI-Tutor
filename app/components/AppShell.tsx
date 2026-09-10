@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import {
   BarChart3,
   Bot,
+  BookOpen,
   CheckSquare,
   ChevronDown,
   FileText,
@@ -29,7 +30,7 @@ const nav = [
   ["Auto Planner", "/planner", Sparkles],
   ["AI Insights", "/insights", Lightbulb],
   ["Documentation", "/documents", FileText],
-  ["Viva Coach", "/viva", FileText],
+  ["Micro-Learning", "/micro-learning", BookOpen],
   ["Tasks", "/tasks", CheckSquare],
   ["Analytics", "/analytics", BarChart3],
   ["Settings", "/settings", Settings],
@@ -72,7 +73,9 @@ export default function AppShell({
 
       setEmail(user.email || "");
 
-      setStudentNumber(user.user_metadata?.student_number || "");
+      setStudentNumber(
+        user.user_metadata?.student_number || ""
+      );
     }
 
     loadUser();
@@ -91,7 +94,11 @@ export default function AppShell({
 
   return (
     <div className="app-shell">
-      <aside className={`sidebar ${open ? "sidebar-open" : ""}`}>
+      <aside
+        className={`sidebar ${
+          open ? "sidebar-open" : ""
+        }`}
+      >
         <div className="brand">
           <div className="brand-mark">
             <Zap size={18} />
@@ -123,14 +130,18 @@ export default function AppShell({
               href={href}
               onClick={() => setOpen(false)}
               className={
-                pathname === href || pathname.startsWith(`${href}/`)
+                pathname === href ||
+                pathname.startsWith(`${href}/`)
                   ? "active"
                   : ""
               }
             >
               <Icon size={18} />
               <span>{label}</span>
-              {label === "Auto Planner" && <b>AI</b>}
+
+              {label === "Auto Planner" && (
+                <b>AI</b>
+              )}
             </Link>
           ))}
         </nav>
@@ -141,11 +152,16 @@ export default function AppShell({
 
             <div>
               <strong>AI is watching</strong>
-              <span>Ready to catch project risks.</span>
+              <span>
+                Ready to catch project risks.
+              </span>
             </div>
           </div>
 
-          <button className="signout" onClick={signOut}>
+          <button
+            className="signout"
+            onClick={signOut}
+          >
             <LogOut size={17} />
             Sign out
           </button>
@@ -172,8 +188,8 @@ export default function AppShell({
 
           <div>
             <div className="eyebrow">
-              AI GUIDED PROJECT PROGRESS TRACKING PLATFORM WITH PLANNING &
-              MENTORSHIP ASSISTANCE
+              AI GUIDED PROJECT PROGRESS TRACKING PLATFORM WITH
+              PLANNING & MENTORSHIP ASSISTANCE
             </div>
 
             {title && <h1>{title}</h1>}
@@ -183,11 +199,15 @@ export default function AppShell({
           <div className="account-wrap">
             <button
               className="user-pill"
-              onClick={() => setAccountOpen((v) => !v)}
+              onClick={() =>
+                setAccountOpen((v) => !v)
+              }
               aria-expanded={accountOpen}
             >
               <div className="avatar">
-                {name.slice(0, 1).toUpperCase()}
+                {name
+                  .slice(0, 1)
+                  .toUpperCase()}
               </div>
 
               <span>{name}</span>
@@ -200,12 +220,16 @@ export default function AppShell({
                 <strong>{name}</strong>
 
                 {studentNumber && (
-                  <span>Student No: {studentNumber}</span>
+                  <span>
+                    Student No: {studentNumber}
+                  </span>
                 )}
 
                 {email && <span>{email}</span>}
 
-                <button onClick={switchAccount}>
+                <button
+                  onClick={switchAccount}
+                >
                   <UserPlus size={14} />
                   Switch account
                 </button>
@@ -219,7 +243,9 @@ export default function AppShell({
           </div>
         </header>
 
-        <main className="content">{children}</main>
+        <main className="content">
+          {children}
+        </main>
       </section>
     </div>
   );

@@ -14,6 +14,7 @@ import {
   User,
 } from "lucide-react";
 import AppShell from "@/app/components/AppShell";
+import ProjectIntelligence from "@/app/components/ai/ProjectIntelligence";
 import { getUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 
@@ -53,8 +54,10 @@ export default async function Dashboard() {
 
   const avg = ps.length
     ? Math.round(
-        ps.reduce((total, project) => total + (project.progress || 0), 0) /
-          ps.length
+        ps.reduce(
+          (total, project) => total + (project.progress || 0),
+          0
+        ) / ps.length
       )
     : 0;
 
@@ -69,7 +72,9 @@ export default async function Dashboard() {
     user.email?.split("@")[0] ||
     "Student";
 
-  const studentNumber = user.user_metadata?.student_number || "Not provided";
+  const studentNumber =
+    user.user_metadata?.student_number || "Not provided";
+
   const studentEmail = user.email || "Not available";
 
   return (
@@ -80,21 +85,38 @@ export default async function Dashboard() {
       }. Here is what needs your attention.`}
     >
       {/* STUDENT PROFILE */}
-      <section className="card fade-up" style={{ padding: 20, marginBottom: 20 }}>
+      <section
+        className="card fade-up"
+        style={{ padding: 20, marginBottom: 20 }}
+      >
         <div className="section-row">
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
             <div className="avatar">
               <User size={17} />
             </div>
 
             <div>
-              <span className="hero-kicker">STUDENT PROFILE</span>
-              <h3 style={{ margin: "5px 0 0" }}>{studentName}</h3>
+              <span className="hero-kicker">
+                STUDENT PROFILE
+              </span>
+
+              <h3 style={{ margin: "5px 0 0" }}>
+                {studentName}
+              </h3>
             </div>
           </div>
 
           <div style={{ textAlign: "right" }}>
-            <div className="small muted">Student Number</div>
+            <div className="small muted">
+              Student Number
+            </div>
+
             <strong>{studentNumber}</strong>
           </div>
         </div>
@@ -107,10 +129,14 @@ export default async function Dashboard() {
           }}
         >
           <span className="muted small">Email</span>
-          <div style={{ marginTop: 3 }}>{studentEmail}</div>
+
+          <div style={{ marginTop: 3 }}>
+            {studentEmail}
+          </div>
         </div>
       </section>
 
+      {/* STATS */}
       <div className="grid stat-grid">
         <Stat
           icon={<FolderKanban />}
@@ -137,8 +163,12 @@ export default async function Dashboard() {
         />
       </div>
 
+      {/* MAIN DASHBOARD */}
       <div className="grid dashboard-main">
-        <section className="card fade-up" style={{ padding: 24 }}>
+        <section
+          className="card fade-up"
+          style={{ padding: 24 }}
+        >
           <div className="section-row">
             <div>
               <span className="hero-kicker">
@@ -170,14 +200,24 @@ export default async function Dashboard() {
                     <Target size={17} />
                   </div>
 
-                  <div style={{ minWidth: 0, flex: 1 }}>
+                  <div
+                    style={{
+                      minWidth: 0,
+                      flex: 1,
+                    }}
+                  >
                     <div className="project-row">
                       <strong>{p.title}</strong>
-                      <span className="badge">{p.status}</span>
+
+                      <span className="badge">
+                        {p.status}
+                      </span>
                     </div>
 
                     <p className="muted project-meta">
-                      {p.technology || p.project_type || "Academic project"}
+                      {p.technology ||
+                        p.project_type ||
+                        "Academic project"}
                     </p>
 
                     <div className="progress">
@@ -189,11 +229,15 @@ export default async function Dashboard() {
                     </div>
 
                     <div className="project-foot">
-                      <span>{p.progress || 0}% complete</span>
+                      <span>
+                        {p.progress || 0}% complete
+                      </span>
 
                       <span>
                         {p.deadline
-                          ? new Date(p.deadline).toLocaleDateString()
+                          ? new Date(
+                              p.deadline
+                            ).toLocaleDateString()
                           : "No deadline"}
                       </span>
                     </div>
@@ -204,6 +248,7 @@ export default async function Dashboard() {
           )}
         </section>
 
+        {/* SIDE STACK */}
         <aside className="grid side-stack">
           <Link
             href="/planner"
@@ -213,19 +258,25 @@ export default async function Dashboard() {
               <Sparkles size={19} />
             </div>
 
-            <span className="hero-kicker">AUTOMATIC PLANNING</span>
+            <span className="hero-kicker">
+              AUTOMATIC PLANNING
+            </span>
 
-            <h3>Turn an idea into a roadmap.</h3>
+            <h3>
+              Turn an idea into a roadmap.
+            </h3>
 
             <p>
-              Generate scope, stack, milestones, tasks and risks in one pass.
+              Generate scope, stack, milestones, tasks
+              and risks in one pass.
             </p>
 
             <span
               className="btn btn-primary"
               style={{ width: "fit-content" }}
             >
-              Open AI Planner <ArrowRight size={14} />
+              Open AI Planner{" "}
+              <ArrowRight size={14} />
             </span>
           </Link>
 
@@ -249,12 +300,17 @@ export default async function Dashboard() {
                 </h3>
               </div>
 
-              <span className="badge">{ms.length}</span>
+              <span className="badge">
+                {ms.length}
+              </span>
             </div>
 
             <div className="next-list">
               {ms.slice(0, 3).map((m) => (
-                <div key={m.id} className="next-item">
+                <div
+                  key={m.id}
+                  className="next-item"
+                >
                   <span className="next-dot" />
 
                   <div>
@@ -262,7 +318,9 @@ export default async function Dashboard() {
 
                     <small>
                       {m.target_date
-                        ? new Date(m.target_date).toLocaleDateString()
+                        ? new Date(
+                            m.target_date
+                          ).toLocaleDateString()
                         : "Date not set"}
                     </small>
                   </div>
@@ -271,7 +329,8 @@ export default async function Dashboard() {
 
               {!ms.length && (
                 <p className="muted small">
-                  Your next milestones will appear here.
+                  Your next milestones will appear
+                  here.
                 </p>
               )}
             </div>
@@ -279,6 +338,12 @@ export default async function Dashboard() {
         </aside>
       </div>
 
+      {/* AI PROJECT INTELLIGENCE */}
+      {first && (
+        <ProjectIntelligence projectId={first.id} />
+      )}
+
+      {/* AI MENTOR */}
       {first && (
         <section className="card mentor-banner fade-up delay-3">
           <div className="avatar pulse">
@@ -286,11 +351,13 @@ export default async function Dashboard() {
           </div>
 
           <div style={{ flex: 1 }}>
-            <strong>AI Mentor has context on {first.title}</strong>
+            <strong>
+              AI Mentor has context on {first.title}
+            </strong>
 
             <div className="muted small">
-              Ask what to build next, review a blocker, or generate the next
-              sprint.
+              Ask what to build next, review a blocker,
+              or generate the next sprint.
             </div>
           </div>
 
@@ -298,7 +365,8 @@ export default async function Dashboard() {
             href={`/projects/${first.id}/mentor`}
             className="btn btn-primary"
           >
-            Talk to Mentor <ArrowRight size={14} />
+            Talk to Mentor{" "}
+            <ArrowRight size={14} />
           </Link>
         </section>
       )}
@@ -320,7 +388,9 @@ function Stat({
       <div className="section-row">
         <small>{label}</small>
 
-        <span className="stat-icon">{icon}</span>
+        <span className="stat-icon">
+          {icon}
+        </span>
       </div>
 
       <strong>{value}</strong>
@@ -335,15 +405,21 @@ function EmptyProject() {
         <Plus size={20} />
       </div>
 
-      <h3>Your first project starts here.</h3>
+      <h3>
+        Your first project starts here.
+      </h3>
 
       <p>
-        Create it manually or let AI generate the entire project plan from one
-        idea.
+        Create it manually or let AI generate the
+        entire project plan from one idea.
       </p>
 
-      <Link href="/planner" className="btn btn-primary">
-        Create with AI <Sparkles size={14} />
+      <Link
+        href="/planner"
+        className="btn btn-primary"
+      >
+        Create with AI{" "}
+        <Sparkles size={14} />
       </Link>
     </div>
   );

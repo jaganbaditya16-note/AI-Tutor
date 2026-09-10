@@ -102,3 +102,91 @@ create index if not exists faculty_invitations_expires_idx
   on faculty_invitations(expires_at);
 
 alter table faculty_invitations enable row level security;
+
+
+-- ============================================================
+-- FACULTY PROJECT ASSIGNMENTS
+-- ============================================================
+
+create table if not exists faculty_project_assignments (
+  id uuid primary key default gen_random_uuid(),
+
+  faculty_id uuid not null
+    references auth.users(id)
+    on delete cascade,
+
+  project_id uuid not null
+    references projects(id)
+    on delete cascade,
+
+  assigned_by uuid
+    references auth.users(id)
+    on delete set null,
+
+  assigned_at timestamptz not null default now(),
+
+  unique (faculty_id, project_id)
+);
+
+create index if not exists faculty_assignments_faculty_idx
+  on faculty_project_assignments(faculty_id);
+
+create index if not exists faculty_assignments_project_idx
+  on faculty_project_assignments(project_id);
+
+alter table faculty_project_assignments enable row level security;
+
+-- ============================================================
+-- FACULTY FEEDBACK
+-- ============================================================
+
+create table if not exists faculty_feedback (
+  id uuid primary key default gen_random_uuid(),
+
+  faculty_id uuid not null
+    references auth.users(id)
+    on delete cascade,
+
+  project_id uuid not null
+    references projects(id)
+    on delete cascade,
+
+  milestone_id uuid
+    references milestones(id)
+    on delete cascade,
+
+  feedback text not null,
+
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists faculty_feedback_project_idx
+  on faculty_feedback(project_id);
+
+create index if not exists faculty_feedback_faculty_idx
+  on faculty_feedback(faculty_id);
+
+alter table faculty_feedback enable row level security;
+
+alter table public.milestones
+add column if not exists faculty_review_status text
+default 'Pending'
+check (
+  faculty_review_status in (
+    'Pending',
+    'Approved',
+    'Rejected'
+  )
+);
+
+alter table public.milestones
+add column if not exists faculty_review_comment text;
+
+alter table public.milestones
+add column if not exists reviewed_by uuid
+references auth.users(id)
+on delete set null;
+
+alter table public.milestones
+add column if not exists reviewed_at timestamptz;
