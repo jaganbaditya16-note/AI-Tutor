@@ -10,6 +10,7 @@ const publicRoutes = [
   "/faculty/invite",
   "/admin/sign-in",
   "/api/health",
+  "/api/auth/role",
 ];
 
 function isPublic(pathname: string) {
