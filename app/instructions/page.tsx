@@ -59,11 +59,11 @@ export default function InstructionsPage() {
             icon={<ShieldCheck size={20} />}
             title="Admin"
             steps={[
-              "Use an administrator account created by the project owner/database administrator.",
-              "Open Admin Sign In and enter the admin account credentials.",
+              "An administrator account must be created first with the secure create-admin script; normal public sign-up creates student accounts only.",
+              "Open Admin Sign In and enter the administrator credentials.",
               "Manage students, faculty and project assignments.",
               "Invite faculty members and give them their invitation link.",
-              "Admin-only API routes reject non-admin users even if they manually type /admin.",
+              "Changing /student, /faculty or /admin in the URL does not change the account role; unauthorized access ends on the Access Denied page.",
             ]}
             href="/admin/sign-in"
             action="Admin sign in"
