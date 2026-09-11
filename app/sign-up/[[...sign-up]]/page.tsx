@@ -87,7 +87,7 @@ export default function SignUpPage() {
           </h1>
 
           <p>
-            From raw idea to final viva, one intelligent workspace keeps the
+            From raw idea to final presentation, one intelligent workspace keeps the
             whole journey on track.
           </p>
 
