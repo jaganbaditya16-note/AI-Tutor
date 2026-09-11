@@ -137,6 +137,7 @@ export default function FacultyPage() {
           ? err.message
           : "Unable to load faculty projects."
       );
+      return [];
     } finally {
       setLoading(false);
     }
