@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { requireUser } from "@/lib/auth";
+import { requireStudent } from "@/lib/auth/roles";
 
 export async function POST(request: Request) {
   try {
-    const userId = await requireUser();
+    const userId = await requireStudent();
     const body = await request.json();
     const projectId = String(body.projectId || "");
 
