@@ -113,7 +113,7 @@ export default function FacultyPage() {
   );
   const [actionMessage, setActionMessage] = useState("");
 
-  async function loadProjects() {
+  async function loadProjects(): Promise<FacultyProject[]> {
     try {
       setLoading(true);
       setError("");
@@ -128,7 +128,9 @@ export default function FacultyPage() {
         throw new Error(data.error || "Unable to load projects.");
       }
 
-      setProjects(data.projects || []);
+      const nextProjects = data.projects || [];
+      setProjects(nextProjects);
+      return nextProjects;
     } catch (err) {
       setError(
         err instanceof Error
@@ -191,15 +193,11 @@ export default function FacultyPage() {
 
       setFeedbackText("");
       setActionMessage("Feedback saved successfully.");
-      await loadProjects();
-
-      const refreshed = projects.find(
+      const refreshedProjects = await loadProjects();
+      const refreshed = refreshedProjects.find(
         (item) => item.project.id === selected.project.id
       );
-
-      if (refreshed) {
-        setSelected(refreshed);
-      }
+      if (refreshed) setSelected(refreshed);
     } catch (err) {
       setActionMessage(
         err instanceof Error ? err.message : "Unable to save feedback."
