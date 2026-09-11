@@ -54,16 +54,41 @@ export default function AppShell({
   const [name, setName] = useState("Student");
   const [email, setEmail] = useState("");
   const [studentNumber, setStudentNumber] = useState("");
+  const [authorized, setAuthorized] = useState<boolean | null>(null);
 
   useEffect(() => {
     async function loadUser() {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      const [{ data: { user } }, roleResponse] = await Promise.all([
+        supabase.auth.getUser(),
+        fetch("/api/auth/role", { cache: "no-store" }),
+      ]);
+
+      if (!user) {
+        setAuthorized(false);
+        return;
+      }
+
+      let roleData: { role?: string } = {};
+      try {
+        roleData = await roleResponse.json();
+      } catch {
+        setAuthorized(false);
+        return;
+      }
+
+      if (!roleResponse.ok || roleData.role !== "student") {
+        setAuthorized(false);
+        window.location.replace("/access-denied");
+        return;
+      }
+
+      setAuthorized(true);
       setName(user.user_metadata?.full_name || user.email?.split("@")[0] || "Student");
       setEmail(user.email || "");
       setStudentNumber(user.user_metadata?.student_number || "");
     }
+
     loadUser();
   }, []);
 
@@ -76,6 +101,16 @@ export default function AppShell({
   async function switchAccount() {
     await createClient().auth.signOut();
     window.location.href = "/sign-in?switch=1";
+  }
+
+  if (authorized !== true) {
+    return (
+      <main className="min-h-screen bg-[#070b14] px-6 py-16 text-white">
+        <div className="mx-auto max-w-xl rounded-3xl border border-white/10 bg-white/[0.03] p-8 text-center">
+          <p className="text-sm text-slate-400">Verifying your account permissions…</p>
+        </div>
+      </main>
+    );
   }
 
   return (
