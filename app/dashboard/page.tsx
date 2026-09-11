@@ -16,9 +16,11 @@ import {
 import AppShell from "@/app/components/AppShell";
 import ProjectIntelligence from "@/app/components/ai/ProjectIntelligence";
 import { getUser } from "@/lib/auth";
+import { requireStudent } from "@/lib/auth/roles";
 import { db } from "@/lib/db";
 
 export default async function Dashboard() {
+  await requireStudent();
   const user = await getUser();
 
   if (!user) return null;
