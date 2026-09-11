@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { requireUser } from "@/lib/auth";
+import { requireStudent } from "@/lib/auth/roles";
 import { db } from "@/lib/db";
 import { aiModel, generateJson, openRouterClient } from "@/lib/ai-json";
 
 export async function POST(request: Request) {
   try {
-    const userId = await requireUser();
+    const userId = await requireStudent();
     const { projectId } = await request.json();
     if (!projectId) return NextResponse.json({ error: "Project is required." }, { status: 400 });
     const supabase = db();
