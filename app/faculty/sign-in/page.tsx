@@ -32,6 +32,20 @@ export default function FacultySignInPage() {
       return;
     }
 
+    const roleResponse = await fetch("/api/auth/role", { cache: "no-store" });
+    const roleData = await roleResponse.json();
+
+    if (!roleResponse.ok || roleData.role !== "faculty") {
+      await supabase.auth.signOut();
+      setError(
+        roleData.role
+          ? "This account is not a faculty account. Use the correct sign-in page."
+          : roleData.error || "Unable to verify your account role."
+      );
+      setLoading(false);
+      return;
+    }
+
     router.push("/faculty");
     router.refresh();
   }
