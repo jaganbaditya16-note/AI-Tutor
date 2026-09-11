@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
-import { requireUser } from "@/lib/auth";
+import { requireStudent } from "@/lib/auth/roles";
 import { db } from "@/lib/db";
 
 export async function POST(request:Request){
  try{
-  const userId=await requireUser();const body=await request.json();const message=String(body.message||"").trim();const projectId=String(body.projectId||"");
+  const userId=await requireStudent();const body=await request.json();const message=String(body.message||"").trim();const projectId=String(body.projectId||"");
   if(!message||!projectId)return NextResponse.json({error:"Project and message are required."},{status:400});
   const supabase=db();const {data:project}=await supabase.from("projects").select("*").eq("id",projectId).eq("user_id",userId).single();if(!project)return NextResponse.json({error:"Project not found or access denied."},{status:404});
   const [{data:tasks},{data:milestones}]=await Promise.all([supabase.from("tasks").select("title,status,priority,due_date").eq("project_id",projectId),supabase.from("milestones").select("title,status,progress,target_date").eq("project_id",projectId)]);
