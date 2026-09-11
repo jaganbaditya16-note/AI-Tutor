@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/browser";
 
 export default function AdminSignInPage() {
@@ -84,6 +85,8 @@ export default function AdminSignInPage() {
           {loading ? "Signing in..." : "Sign In"}
         </button>
       </form>
+
+      <p style={{ marginTop: 20 }}><Link href="/instructions">Need help? Open the usage guide.</Link></p>
     </main>
   );
 }
