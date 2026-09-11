@@ -2,45 +2,53 @@
 
 **AI Guided Project Progress Tracking Platform with Planning & Mentorship Assistance**
 
-ProjectPilot is a full-stack Next.js workspace that takes a college project from idea → scope → technology → roadmap → tasks → progress → risk analysis → documentation → viva preparation.
+ProjectPilot is a full-stack Next.js workspace for college project planning, execution, progress tracking, AI-assisted analysis, documentation, micro-learning, and academic mentorship.
 
-## What is built
-- Premium responsive SaaS UI with animated landing, dashboard and workspace
-- Email/password authentication with Supabase Auth (no Clerk)
-- Secure server-side project ownership checks
-- Project, task and milestone CRUD APIs
-- AI Orchestrator that generates a complete project plan from one idea
-- AI Mentor with live project + task + milestone context
-- AI Insights / Risk Predictor with health scoring and next actions
-- AI Documentation Architect for report, UML and testing outlines
-- AI Viva Coach for project-specific examiner questions
-- Portfolio analytics and progress visualization
-- Audit events for important project and AI actions
-- Supabase schema with RLS enabled
+## Read the instructions first
 
-## AI team
-Idea Architect · Scope Analyst · Technology Advisor · Planning Agent · Risk Predictor · Documentation Coach · Viva Coach · AI Mentor
+Open **/instructions** in the running application before using the platform. It explains the correct student, faculty, and admin workflow and the order in which accounts should be created.
+
+### Student
+1. Use **/sign-up** to create a student account.
+2. Sign in through **/sign-in**.
+3. Create/manage projects and use the planning, AI, documentation, micro-learning, task, milestone, and analytics features.
+
+### Faculty
+1. An authorized admin must create a faculty invitation.
+2. Open the invitation and complete faculty account setup.
+3. Future logins use **/faculty/sign-in**.
+4. Faculty can review projects assigned to them and provide academic feedback.
+
+### Admin
+1. There is intentionally **no hard-coded admin account** in the repository.
+2. Configure `.env.local` locally with the Supabase URL, anon key, and service-role key.
+3. Run **npm run create-admin**.
+4. The script asks for the admin email, password, and full name in the terminal. These values are not committed to the repository.
+5. Sign in through **/admin/sign-in**.
+
+## Security
+
+- Never commit `.env.local`, passwords, service-role keys, AI provider keys, or personal credentials.
+- `.gitignore` excludes `.env`, `.env.local`, and local environment variants.
+- Protected role checks are performed server-side.
+- Typing `/admin` or `/faculty` into the URL does not grant permission.
+- AI output is advisory and should be reviewed before academic or project decisions.
 
 ## Environment
-Copy `.env.example` to `.env.local` and configure:
 
-```env
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-OPENROUTER_API_KEY=
-OPENROUTER_MODEL=openai/gpt-5-mini
-```
+Copy `.env.example` to `.env.local` and configure the required Supabase and AI provider variables.
 
-Run `supabase/schema.sql` in the Supabase SQL Editor before using database features. Never commit `.env.local`, service-role keys or AI provider keys.
+Run `supabase/schema.sql` in the Supabase SQL Editor before using database features.
 
 ## Development
+
 ```bash
 npm install
 npm run dev
 ```
 
 Production verification:
+
 ```bash
 npm run build
 npm start
