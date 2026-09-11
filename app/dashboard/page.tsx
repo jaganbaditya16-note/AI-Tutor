@@ -1,18 +1,426 @@
 import Link from "next/link";
-import { Activity, ArrowRight, Bot, CalendarClock, CheckCircle2, FolderKanban, Plus, Sparkles, Target, TrendingUp, TriangleAlert } from "lucide-react";
+import {
+  Activity,
+  ArrowRight,
+  Bot,
+  CalendarClock,
+  CheckCircle2,
+  FolderKanban,
+  Plus,
+  Sparkles,
+  Target,
+  TrendingUp,
+  TriangleAlert,
+  User,
+} from "lucide-react";
 import AppShell from "@/app/components/AppShell";
+import ProjectIntelligence from "@/app/components/ai/ProjectIntelligence";
 import { getUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 
-export default async function Dashboard(){
- const user=await getUser(); if(!user) return null; const supabase=db();
- const [{data:projects},{data:tasks},{data:milestones}]=await Promise.all([
-  supabase.from("projects").select("*").eq("user_id",user.id).order("created_at",{ascending:false}),
-  supabase.from("tasks").select("*,projects!inner(user_id)").eq("status","Pending").eq("projects.user_id",user.id),
-  supabase.from("milestones").select("*,projects!inner(user_id)").eq("status","Upcoming").eq("projects.user_id",user.id).order("target_date",{ascending:true}).limit(5),
- ]);
- const ps=projects||[]; const ts=tasks||[]; const ms=milestones||[]; const avg=ps.length?Math.round(ps.reduce((a,p)=>a+(p.progress||0),0)/ps.length):0; const overdue=ts.filter(t=>t.due_date&&new Date(t.due_date)<new Date()).length; const first=ps[0];
- return <AppShell title="Command center" subtitle={`Good to see you, ${user.user_metadata?.full_name?.split(" ")[0]||user.email?.split("@")[0]||"student"}. Here is what needs your attention.`}><div className="grid stat-grid"><Stat icon={<FolderKanban/>} label="Active projects" value={ps.length}/><Stat icon={<TrendingUp/>} label="Average progress" value={`${avg}%`}/><Stat icon={<CheckCircle2/>} label="Open tasks" value={ts.length}/><Stat icon={<TriangleAlert/>} label="Needs attention" value={overdue}/></div><div className="grid dashboard-main"><section className="card fade-up" style={{padding:24}}><div className="section-row"><div><span className="hero-kicker"><Activity size={13}/> PROJECT PULSE</span><h2>Your projects</h2></div><Link href="/projects" className="btn">View all <ArrowRight size={14}/></Link></div>{ps.length===0?<EmptyProject/>:<div className="project-grid">{ps.slice(0,4).map((p,i)=><Link key={p.id} href={`/projects/${p.id}`} className={`project-tile fade-up delay-${Math.min(i+1,3)}`}><div className="project-icon"><Target size={17}/></div><div style={{minWidth:0,flex:1}}><div className="project-row"><strong>{p.title}</strong><span className="badge">{p.status}</span></div><p className="muted project-meta">{p.technology||p.project_type||"Academic project"}</p><div className="progress"><span style={{width:`${p.progress||0}%`}}/></div><div className="project-foot"><span>{p.progress||0}% complete</span><span>{p.deadline?new Date(p.deadline).toLocaleDateString():"No deadline"}</span></div></div></Link>)}</div>}</section><aside className="grid side-stack"><Link href="/planner" className="card ai-hero fade-up delay-1"><div className="ai-spark"><Sparkles size={19}/></div><span className="hero-kicker">AUTOMATIC PLANNING</span><h3>Turn an idea into a roadmap.</h3><p>Generate scope, stack, milestones, tasks and risks in one pass.</p><span className="btn btn-primary" style={{width:"fit-content"}}>Open AI Planner <ArrowRight size={14}/></span></Link><div className="card fade-up delay-2" style={{padding:20}}><div className="section-row"><div><span className="hero-kicker"><CalendarClock size={12}/> NEXT UP</span><h3 style={{margin:"6px 0 0",fontSize:15}}>Upcoming milestones</h3></div><span className="badge">{ms.length}</span></div><div className="next-list">{ms.slice(0,3).map(m=><div key={m.id} className="next-item"><span className="next-dot"/><div><strong>{m.title}</strong><small>{m.target_date?new Date(m.target_date).toLocaleDateString():"Date not set"}</small></div></div>)}{!ms.length&&<p className="muted small">Your next milestones will appear here.</p>}</div></div></aside></div>{first&&<section className="card mentor-banner fade-up delay-3"><div className="avatar pulse"><Bot size={15}/></div><div style={{flex:1}}><strong>AI Mentor has context on {first.title}</strong><div className="muted small">Ask what to build next, review a blocker, or generate the next sprint.</div></div><Link href={`/projects/${first.id}/mentor`} className="btn btn-primary">Talk to Mentor <ArrowRight size={14}/></Link></section>}</AppShell>
+export default async function Dashboard() {
+  const user = await getUser();
+
+  if (!user) return null;
+
+  const supabase = db();
+
+  const [{ data: projects }, { data: tasks }, { data: milestones }] =
+    await Promise.all([
+      supabase
+        .from("projects")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false }),
+
+      supabase
+        .from("tasks")
+        .select("*,projects!inner(user_id)")
+        .eq("status", "Pending")
+        .eq("projects.user_id", user.id),
+
+      supabase
+        .from("milestones")
+        .select("*,projects!inner(user_id)")
+        .eq("status", "Upcoming")
+        .eq("projects.user_id", user.id)
+        .order("target_date", { ascending: true })
+        .limit(5),
+    ]);
+
+  const ps = projects || [];
+  const ts = tasks || [];
+  const ms = milestones || [];
+
+  const avg = ps.length
+    ? Math.round(
+        ps.reduce(
+          (total, project) => total + (project.progress || 0),
+          0
+        ) / ps.length
+      )
+    : 0;
+
+  const overdue = ts.filter(
+    (task) => task.due_date && new Date(task.due_date) < new Date()
+  ).length;
+
+  const first = ps[0];
+
+  const studentName =
+    user.user_metadata?.full_name ||
+    user.email?.split("@")[0] ||
+    "Student";
+
+  const studentNumber =
+    user.user_metadata?.student_number || "Not provided";
+
+  const studentEmail = user.email || "Not available";
+
+  return (
+    <AppShell
+      title="Command center"
+      subtitle={`Good to see you, ${
+        studentName.split(" ")[0]
+      }. Here is what needs your attention.`}
+    >
+      {/* STUDENT PROFILE */}
+      <section
+        className="card fade-up"
+        style={{ padding: 20, marginBottom: 20 }}
+      >
+        <div className="section-row">
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            <div className="avatar">
+              <User size={17} />
+            </div>
+
+            <div>
+              <span className="hero-kicker">
+                STUDENT PROFILE
+              </span>
+
+              <h3 style={{ margin: "5px 0 0" }}>
+                {studentName}
+              </h3>
+            </div>
+          </div>
+
+          <div style={{ textAlign: "right" }}>
+            <div className="small muted">
+              Student Number
+            </div>
+
+            <strong>{studentNumber}</strong>
+          </div>
+        </div>
+
+        <div
+          style={{
+            marginTop: 16,
+            paddingTop: 14,
+            borderTop: "1px solid var(--border)",
+          }}
+        >
+          <span className="muted small">Email</span>
+
+          <div style={{ marginTop: 3 }}>
+            {studentEmail}
+          </div>
+        </div>
+      </section>
+
+      {/* STATS */}
+      <div className="grid stat-grid">
+        <Stat
+          icon={<FolderKanban />}
+          label="Active projects"
+          value={ps.length}
+        />
+
+        <Stat
+          icon={<TrendingUp />}
+          label="Average progress"
+          value={`${avg}%`}
+        />
+
+        <Stat
+          icon={<CheckCircle2 />}
+          label="Open tasks"
+          value={ts.length}
+        />
+
+        <Stat
+          icon={<TriangleAlert />}
+          label="Needs attention"
+          value={overdue}
+        />
+      </div>
+
+      {/* MAIN DASHBOARD */}
+      <div className="grid dashboard-main">
+        <section
+          className="card fade-up"
+          style={{ padding: 24 }}
+        >
+          <div className="section-row">
+            <div>
+              <span className="hero-kicker">
+                <Activity size={13} /> PROJECT PULSE
+              </span>
+
+              <h2>Your projects</h2>
+            </div>
+
+            <Link href="/projects" className="btn">
+              View all <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          {ps.length === 0 ? (
+            <EmptyProject />
+          ) : (
+            <div className="project-grid">
+              {ps.slice(0, 4).map((p, i) => (
+                <Link
+                  key={p.id}
+                  href={`/projects/${p.id}`}
+                  className={`project-tile fade-up delay-${Math.min(
+                    i + 1,
+                    3
+                  )}`}
+                >
+                  <div className="project-icon">
+                    <Target size={17} />
+                  </div>
+
+                  <div
+                    style={{
+                      minWidth: 0,
+                      flex: 1,
+                    }}
+                  >
+                    <div className="project-row">
+                      <strong>{p.title}</strong>
+
+                      <span className="badge">
+                        {p.status}
+                      </span>
+                    </div>
+
+                    <p className="muted project-meta">
+                      {p.technology ||
+                        p.project_type ||
+                        "Academic project"}
+                    </p>
+
+                    <div className="progress">
+                      <span
+                        style={{
+                          width: `${p.progress || 0}%`,
+                        }}
+                      />
+                    </div>
+
+                    <div className="project-foot">
+                      <span>
+                        {p.progress || 0}% complete
+                      </span>
+
+                      <span>
+                        {p.deadline
+                          ? new Date(
+                              p.deadline
+                            ).toLocaleDateString()
+                          : "No deadline"}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* SIDE STACK */}
+        <aside className="grid side-stack">
+          <Link
+            href="/planner"
+            className="card ai-hero fade-up delay-1"
+          >
+            <div className="ai-spark">
+              <Sparkles size={19} />
+            </div>
+
+            <span className="hero-kicker">
+              AUTOMATIC PLANNING
+            </span>
+
+            <h3>
+              Turn an idea into a roadmap.
+            </h3>
+
+            <p>
+              Generate scope, stack, milestones, tasks
+              and risks in one pass.
+            </p>
+
+            <span
+              className="btn btn-primary"
+              style={{ width: "fit-content" }}
+            >
+              Open AI Planner{" "}
+              <ArrowRight size={14} />
+            </span>
+          </Link>
+
+          <div
+            className="card fade-up delay-2"
+            style={{ padding: 20 }}
+          >
+            <div className="section-row">
+              <div>
+                <span className="hero-kicker">
+                  <CalendarClock size={12} /> NEXT UP
+                </span>
+
+                <h3
+                  style={{
+                    margin: "6px 0 0",
+                    fontSize: 15,
+                  }}
+                >
+                  Upcoming milestones
+                </h3>
+              </div>
+
+              <span className="badge">
+                {ms.length}
+              </span>
+            </div>
+
+            <div className="next-list">
+              {ms.slice(0, 3).map((m) => (
+                <div
+                  key={m.id}
+                  className="next-item"
+                >
+                  <span className="next-dot" />
+
+                  <div>
+                    <strong>{m.title}</strong>
+
+                    <small>
+                      {m.target_date
+                        ? new Date(
+                            m.target_date
+                          ).toLocaleDateString()
+                        : "Date not set"}
+                    </small>
+                  </div>
+                </div>
+              ))}
+
+              {!ms.length && (
+                <p className="muted small">
+                  Your next milestones will appear
+                  here.
+                </p>
+              )}
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      {/* AI PROJECT INTELLIGENCE */}
+      {first && (
+        <ProjectIntelligence projectId={first.id} />
+      )}
+
+      {/* AI MENTOR */}
+      {first && (
+        <section className="card mentor-banner fade-up delay-3">
+          <div className="avatar pulse">
+            <Bot size={15} />
+          </div>
+
+          <div style={{ flex: 1 }}>
+            <strong>
+              AI Mentor has context on {first.title}
+            </strong>
+
+            <div className="muted small">
+              Ask what to build next, review a blocker,
+              or generate the next sprint.
+            </div>
+          </div>
+
+          <Link
+            href={`/projects/${first.id}/mentor`}
+            className="btn btn-primary"
+          >
+            Talk to Mentor{" "}
+            <ArrowRight size={14} />
+          </Link>
+        </section>
+      )}
+    </AppShell>
+  );
 }
-function Stat({icon,label,value}:{icon:React.ReactNode;label:string;value:string|number}){return <div className="card stat fade-up"><div className="section-row"><small>{label}</small><span className="stat-icon">{icon}</span></div><strong>{value}</strong></div>}
-function EmptyProject(){return <div className="empty-state"><div className="empty-icon"><Plus size={20}/></div><h3>Your first project starts here.</h3><p>Create it manually or let AI generate the entire project plan from one idea.</p><Link href="/planner" className="btn btn-primary">Create with AI <Sparkles size={14}/></Link></div>}
+
+function Stat({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string | number;
+}) {
+  return (
+    <div className="card stat fade-up">
+      <div className="section-row">
+        <small>{label}</small>
+
+        <span className="stat-icon">
+          {icon}
+        </span>
+      </div>
+
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
+function EmptyProject() {
+  return (
+    <div className="empty-state">
+      <div className="empty-icon">
+        <Plus size={20} />
+      </div>
+
+      <h3>
+        Your first project starts here.
+      </h3>
+
+      <p>
+        Create it manually or let AI generate the
+        entire project plan from one idea.
+      </p>
+
+      <Link
+        href="/planner"
+        className="btn btn-primary"
+      >
+        Create with AI{" "}
+        <Sparkles size={14} />
+      </Link>
+    </div>
+  );
+}
