@@ -47,7 +47,10 @@ export async function GET() {
       });
 
       return NextResponse.json(
-        { error: "Unable to load admin management data." },
+        {
+          error:
+            "Unable to load admin management data. Verify that supabase/schema.sql has been applied to the connected Supabase project and that the server environment variables are correct.",
+        },
         { status: 500 }
       );
     }
