@@ -32,6 +32,20 @@ export default function AdminSignInPage() {
       return;
     }
 
+    const roleResponse = await fetch("/api/auth/role", { cache: "no-store" });
+    const roleData = await roleResponse.json();
+
+    if (!roleResponse.ok || roleData.role !== "admin") {
+      await supabase.auth.signOut();
+      setError(
+        roleData.role
+          ? "This account is not an administrator. Use the correct sign-in page."
+          : roleData.error || "Unable to verify your account role."
+      );
+      setLoading(false);
+      return;
+    }
+
     router.push("/admin");
     router.refresh();
   }
