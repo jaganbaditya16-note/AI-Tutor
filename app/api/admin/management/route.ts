@@ -65,9 +65,26 @@ export async function GET() {
   } catch (error) {
     console.error("Admin management API error:", error);
 
+    if (error instanceof Error && error.message === "UNAUTHORIZED") {
+      return NextResponse.json(
+        { error: "Please sign in as an administrator." },
+        { status: 401 }
+      );
+    }
+
+    // Next.js uses a special thrown value for redirects. Do not turn that
+    // authorization redirect into a misleading database/permission error.
+    if (typeof error === "object" && error !== null && "digest" in error) {
+      const digest = String((error as { digest?: unknown }).digest || "");
+      if (digest.startsWith("NEXT_REDIRECT")) throw error;
+    }
+
     return NextResponse.json(
-      { error: "You do not have permission to access this data." },
-      { status: 403 }
+      {
+        error:
+          "Admin data could not be loaded. Check the Supabase server configuration and database schema.",
+      },
+      { status: 500 }
     );
   }
 }
