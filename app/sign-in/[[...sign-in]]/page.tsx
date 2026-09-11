@@ -31,7 +31,9 @@ export default function SignInPage() {
 
     const cleanEmail = email.trim();
 
-    const { error } = await createClient().auth.signInWithPassword({
+    const supabase = createClient();
+
+    const { error } = await supabase.auth.signInWithPassword({
       email: cleanEmail,
       password,
     });
@@ -42,9 +44,34 @@ export default function SignInPage() {
       return;
     }
 
-    const next = new URLSearchParams(window.location.search).get("next");
+    const roleResponse = await fetch("/api/auth/role", { cache: "no-store" });
+    const roleData = await roleResponse.json();
 
-    router.push(next || "/dashboard");
+    if (!roleResponse.ok) {
+      await supabase.auth.signOut();
+      setError(roleData.error || "Unable to verify your account role.");
+      setLoading(false);
+      return;
+    }
+
+    if (roleData.role !== "student") {
+      await supabase.auth.signOut();
+      setError(
+        roleData.role === "admin"
+          ? "This is an administrator account. Use Admin Sign In."
+          : "This is a faculty account. Use Faculty Sign In."
+      );
+      setLoading(false);
+      return;
+    }
+
+    const next = new URLSearchParams(window.location.search).get("next");
+    const safeNext =
+      next && next.startsWith("/") && !next.startsWith("//")
+        ? next
+        : "/dashboard";
+
+    router.push(safeNext);
     router.refresh();
   }
 
