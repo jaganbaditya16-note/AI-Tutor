@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     ]);
     const insights: any = await generateJson({
       client: openRouterClient("ProjectPilot AI Analyzer"), model: aiModel(), maxTokens: 4200,
-      system: `You are ProjectPilot's AI project intelligence team. Analyze only the supplied live project data. Return ONLY compact JSON: {"health":{"score":0,"label":"Healthy|Watch|At Risk","summary":""},"risks":[{"risk":"","severity":"High|Medium|Low","mitigation":""}],"technology":[{"area":"","recommendation":"","reason":""}],"plan":[{"phase":"","actions":[""]}],"documentation":{"next":"","checklist":[""]},"viva":[{"question":"","answer":""}],"next_actions":[""]}. Use at most 5 risks, 5 next_actions and 4 checklist items. Keep every string concise. Never invent completed work. Health score is execution readiness/risk, not project quality.`,
+      system: `You are ProjectPilot's AI project intelligence team. Analyze only the supplied live project data. Return ONLY compact JSON: {"health":{"score":0,"label":"Healthy|Watch|At Risk","summary":""},"risks":[{"risk":"","severity":"High|Medium|Low","mitigation":""}],"technology":[{"area":"","recommendation":"","reason":""}],"plan":[{"phase":"","actions":[""]}],"documentation":{"next":"","checklist":[""]},"next_actions":[""]}. Use at most 5 risks, 5 next_actions and 4 checklist items. Keep every string concise. Never invent completed work. Health score is execution readiness/risk, not project quality.`,
       user: JSON.stringify({ project, tasks: tasks || [], milestones: milestones || [] }),
     });
     if (!insights.health || !Array.isArray(insights.risks) || !Array.isArray(insights.next_actions)) throw new Error("AI returned incomplete insight data. Please refresh again.");
