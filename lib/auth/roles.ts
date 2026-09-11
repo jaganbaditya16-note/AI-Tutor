@@ -20,17 +20,6 @@ export async function getUserRole(): Promise<UserRole> {
   return data.role as UserRole;
 }
 
-export function getDashboardForRole(role: UserRole): string {
-  switch (role) {
-    case "admin":
-      return "/admin";
-    case "faculty":
-      return "/faculty";
-    default:
-      return "/dashboard";
-  }
-}
-
 export async function requireRole(
   allowedRoles: UserRole[]
 ): Promise<string> {
