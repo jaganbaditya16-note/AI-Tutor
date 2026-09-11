@@ -9,6 +9,7 @@ import {
   BookOpen,
   CheckSquare,
   ChevronDown,
+  CircleHelp,
   FileText,
   FolderKanban,
   LayoutDashboard,
@@ -30,6 +31,7 @@ const nav = [
   ["Auto Planner", "/planner", Sparkles],
   ["AI Insights", "/insights", Lightbulb],
   ["Documentation", "/documents", FileText],
+  ["How to Use", "/instructions", CircleHelp],
   ["Micro-Learning", "/micro-learning", BookOpen],
   ["Tasks", "/tasks", CheckSquare],
   ["Analytics", "/analytics", BarChart3],
@@ -47,10 +49,8 @@ export default function AppShell({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-
   const [open, setOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
-
   const [name, setName] = useState("Student");
   const [email, setEmail] = useState("");
   const [studentNumber, setStudentNumber] = useState("");
@@ -58,26 +58,12 @@ export default function AppShell({
   useEffect(() => {
     async function loadUser() {
       const supabase = createClient();
-
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-
-      setName(
-        user.user_metadata?.full_name ||
-          user.email?.split("@")[0] ||
-          "Student"
-      );
-
+      setName(user.user_metadata?.full_name || user.email?.split("@")[0] || "Student");
       setEmail(user.email || "");
-
-      setStudentNumber(
-        user.user_metadata?.student_number || ""
-      );
+      setStudentNumber(user.user_metadata?.student_number || "");
     }
-
     loadUser();
   }, []);
 
@@ -94,158 +80,51 @@ export default function AppShell({
 
   return (
     <div className="app-shell">
-      <aside
-        className={`sidebar ${
-          open ? "sidebar-open" : ""
-        }`}
-      >
+      <aside className={`sidebar ${open ? "sidebar-open" : ""}`}>
         <div className="brand">
-          <div className="brand-mark">
-            <Zap size={18} />
-          </div>
-
-          <div>
-            <strong>ProjectPilot</strong>
-            <span>AI Academic OS</span>
-          </div>
-
-          <button
-            className="mobile-close"
-            onClick={() => setOpen(false)}
-            aria-label="Close menu"
-          >
-            <X size={20} />
-          </button>
+          <div className="brand-mark"><Zap size={18} /></div>
+          <div><strong>ProjectPilot</strong><span>AI Academic OS</span></div>
+          <button className="mobile-close" onClick={() => setOpen(false)} aria-label="Close menu"><X size={20} /></button>
         </div>
-
-        <div className="workspace">
-          <span className="status-dot" />
-          Personal workspace
-        </div>
-
+        <div className="workspace"><span className="status-dot" />Personal workspace</div>
         <nav>
           {nav.map(([label, href, Icon]) => (
-            <Link
-              key={href}
-              href={href}
-              onClick={() => setOpen(false)}
-              className={
-                pathname === href ||
-                pathname.startsWith(`${href}/`)
-                  ? "active"
-                  : ""
-              }
-            >
-              <Icon size={18} />
-              <span>{label}</span>
-
-              {label === "Auto Planner" && (
-                <b>AI</b>
-              )}
+            <Link key={href} href={href} onClick={() => setOpen(false)}
+              className={pathname === href || pathname.startsWith(`${href}/`) ? "active" : ""}>
+              <Icon size={18} /><span>{label}</span>{label === "Auto Planner" && <b>AI</b>}
             </Link>
           ))}
         </nav>
-
         <div className="sidebar-bottom">
-          <div className="mini-ai">
-            <Sparkles size={17} />
-
-            <div>
-              <strong>AI is watching</strong>
-              <span>
-                Ready to catch project risks.
-              </span>
-            </div>
-          </div>
-
-          <button
-            className="signout"
-            onClick={signOut}
-          >
-            <LogOut size={17} />
-            Sign out
-          </button>
+          <div className="mini-ai"><Sparkles size={17} /><div><strong>AI is watching</strong><span>Ready to catch project risks.</span></div></div>
+          <button className="signout" onClick={signOut}><LogOut size={17} />Sign out</button>
         </div>
       </aside>
-
-      {open && (
-        <button
-          className="overlay"
-          onClick={() => setOpen(false)}
-          aria-label="Close menu"
-        />
-      )}
-
+      {open && <button className="overlay" onClick={() => setOpen(false)} aria-label="Close menu" />}
       <section className="main-area">
         <header className="topbar">
-          <button
-            className="mobile-menu"
-            onClick={() => setOpen(true)}
-            aria-label="Open menu"
-          >
-            <Menu size={21} />
-          </button>
-
+          <button className="mobile-menu" onClick={() => setOpen(true)} aria-label="Open menu"><Menu size={21} /></button>
           <div>
-            <div className="eyebrow">
-              AI GUIDED PROJECT PROGRESS TRACKING PLATFORM WITH
-              PLANNING & MENTORSHIP ASSISTANCE
-            </div>
-
+            <div className="eyebrow">AI GUIDED PROJECT PROGRESS TRACKING PLATFORM WITH PLANNING & MENTORSHIP ASSISTANCE</div>
             {title && <h1>{title}</h1>}
             {subtitle && <p>{subtitle}</p>}
           </div>
-
           <div className="account-wrap">
-            <button
-              className="user-pill"
-              onClick={() =>
-                setAccountOpen((v) => !v)
-              }
-              aria-expanded={accountOpen}
-            >
-              <div className="avatar">
-                {name
-                  .slice(0, 1)
-                  .toUpperCase()}
-              </div>
-
-              <span>{name}</span>
-
-              <ChevronDown size={15} />
+            <button className="user-pill" onClick={() => setAccountOpen((v) => !v)} aria-expanded={accountOpen}>
+              <div className="avatar">{name.slice(0, 1).toUpperCase()}</div><span>{name}</span><ChevronDown size={15} />
             </button>
-
             {accountOpen && (
               <div className="account-menu">
                 <strong>{name}</strong>
-
-                {studentNumber && (
-                  <span>
-                    Student No: {studentNumber}
-                  </span>
-                )}
-
+                {studentNumber && <span>Student No: {studentNumber}</span>}
                 {email && <span>{email}</span>}
-
-                <button
-                  onClick={switchAccount}
-                >
-                  <UserPlus size={14} />
-                  Switch account
-                </button>
-
-                <button onClick={signOut}>
-                  <LogOut size={14} />
-                  Sign out
-                </button>
+                <button onClick={switchAccount}><UserPlus size={14} />Switch account</button>
+                <button onClick={signOut}><LogOut size={14} />Sign out</button>
               </div>
             )}
           </div>
         </header>
-
-        <main className="content">
-          {children}
-        </main>
+        <main className="content">{children}</main>
       </section>
     </div>
   );
