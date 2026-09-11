@@ -62,7 +62,7 @@ The project owner/database administrator creates the first admin with `npm run c
 ### Important
 **Read the public `/instructions` page carefully before using the platform.**
 
-Typing `/admin` or `/faculty` manually does not grant access. The protected pages and APIs check the authenticated account's database role on the server. A student who manually enters `/admin` is redirected to the student workspace rather than being granted admin access.
+Typing `/admin` or `/faculty` manually does not grant access. The protected pages and APIs check the authenticated account's database role on the server. An authenticated account that manually enters another role's URL is sent to the Access Denied page; it is never redirected into another role's dashboard.
 
 ## Auto Planner troubleshooting
 The Auto Planner requires:
