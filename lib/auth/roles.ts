@@ -38,7 +38,9 @@ export async function requireRole(
   const role = await getUserRole();
 
   if (!allowedRoles.includes(role)) {
-    redirect(getDashboardForRole(role));
+    // Never redirect an authenticated user into another role's dashboard.
+    // A role mismatch is an authorization failure, not a navigation request.
+    redirect("/access-denied");
   }
 
   return userId;
