@@ -15,15 +15,34 @@ export async function POST(request: Request) {
       supabase.from("tasks").select("title,status,priority,due_date").eq("project_id", projectId),
       supabase.from("milestones").select("title,status,progress,target_date").eq("project_id", projectId),
     ]);
+
+    // Keep this response intentionally compact so the analyzer also works on
+    // low-credit OpenRouter accounts. The previous 4200-token ceiling could
+    // produce a provider 402 even when the application itself was healthy.
     const insights: any = await generateJson({
-      client: openRouterClient("ProjectPilot AI Analyzer"), model: aiModel(), maxTokens: 4200,
-      system: `You are ProjectPilot's AI project intelligence team. Analyze only the supplied live project data. Return ONLY compact JSON: {"health":{"score":0,"label":"Healthy|Watch|At Risk","summary":""},"risks":[{"risk":"","severity":"High|Medium|Low","mitigation":""}],"technology":[{"area":"","recommendation":"","reason":""}],"plan":[{"phase":"","actions":[""]}],"documentation":{"next":"","checklist":[""]},"next_actions":[""]}. Use at most 5 risks, 5 next_actions and 4 checklist items. Keep every string concise. Never invent completed work. Health score is execution readiness/risk, not project quality.`,
+      client: openRouterClient("ProjectPilot AI Analyzer"),
+      model: aiModel(),
+      maxTokens: 2200,
+      system: `You are ProjectPilot's AI project intelligence team. Analyze only supplied live project data. Return ONLY compact JSON: {"health":{"score":0,"label":"Healthy|Watch|At Risk","summary":""},"risks":[{"risk":"","severity":"High|Medium|Low","mitigation":""}],"technology":[{"area":"","recommendation":"","reason":""}],"plan":[{"phase":"","actions":[""]}],"documentation":{"next":"","checklist":[""]},"next_actions":[""]}. Use at most 4 risks, 4 next_actions and 4 checklist items. Keep strings concise. Never invent completed work. Health score is execution readiness/risk, not project quality.`,
       user: JSON.stringify({ project, tasks: tasks || [], milestones: milestones || [] }),
     });
-    if (!insights.health || !Array.isArray(insights.risks) || !Array.isArray(insights.next_actions)) throw new Error("AI returned incomplete insight data. Please refresh again.");
-    const { error: insightError } = await supabase.from("project_insights").upsert({ project_id: projectId, insights, generated_at: new Date().toISOString() }, { onConflict: "project_id" });
+
+    if (!insights.health || !Array.isArray(insights.risks) || !Array.isArray(insights.next_actions)) {
+      throw new Error("AI returned incomplete insight data. Please refresh again.");
+    }
+
+    const { error: insightError } = await supabase
+      .from("project_insights")
+      .upsert({ project_id: projectId, insights, generated_at: new Date().toISOString() }, { onConflict: "project_id" });
     if (insightError) throw insightError;
-    await supabase.from("project_events").insert({ project_id: projectId, user_id: userId, event_type: "ai_analysis", payload: { health: insights.health } });
+
+    await supabase.from("project_events").insert({
+      project_id: projectId,
+      user_id: userId,
+      event_type: "ai_analysis",
+      payload: { health: insights.health },
+    });
+
     return NextResponse.json({ insights });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Analysis failed";
