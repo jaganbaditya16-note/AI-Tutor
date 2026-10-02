@@ -11,11 +11,15 @@ export async function POST(request: Request) {
     const supabase = db();
     const { data: project } = await supabase.from("projects").select("*").eq("id", projectId).eq("user_id", userId).single();
     if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });
+
     const data: any = await generateJson({
-      client: openRouterClient("ProjectPilot Documentation Agent"), model: aiModel(), maxTokens: 2600,
-      system: `You are a technical documentation architect for a college project. Return ONLY compact JSON: {"sections":[{"title":"","points":[""]}],"uml":[""],"testing":[""],"demo_flow":[""]}. Create 6-8 useful sections. Keep points short and grounded only in the project.`,
+      client: openRouterClient("ProjectPilot Documentation Agent"),
+      model: aiModel(),
+      maxTokens: 2200,
+      system: `You are a technical documentation architect for a college project. Return ONLY compact JSON: {"sections":[{"title":"","points":[""]}],"uml":[""],"testing":[""],"demo_flow":[""]}. Create 5-7 useful sections. Keep points short and grounded only in the project.`,
       user: JSON.stringify(project),
     });
+
     if (!Array.isArray(data.sections)) throw new Error("AI returned incomplete documentation data. Please try again.");
     return NextResponse.json(data);
   } catch (e) {
