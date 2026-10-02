@@ -23,6 +23,7 @@ export default function SignUpPage() {
 
   async function submit(e: FormEvent) {
     e.preventDefault();
+    if (loading) return;
 
     setLoading(true);
     setError("");
@@ -30,7 +31,7 @@ export default function SignUpPage() {
 
     const cleanName = name.trim();
     const cleanStudentNumber = studentNumber.trim();
-    const cleanEmail = email.trim();
+    const cleanEmail = email.trim().toLowerCase();
 
     if (!cleanName || !cleanStudentNumber || !cleanEmail || !password) {
       setError("Please fill in all fields.");
@@ -38,33 +39,47 @@ export default function SignUpPage() {
       return;
     }
 
-    const { data, error } = await createClient().auth.signUp({
-      email: cleanEmail,
-      password,
-      options: {
-        data: {
-          full_name: cleanName,
-          student_number: cleanStudentNumber,
-        },
-      },
-    });
-
-    if (error) {
-      setError(error.message);
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
       setLoading(false);
       return;
     }
 
-    if (data.session) {
-      router.push("/dashboard");
-      router.refresh();
-    } else {
-      setMessage(
-        "Account created. Check your email if confirmation is enabled."
-      );
-    }
+    try {
+      const supabase = createClient();
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: cleanEmail,
+        password,
+        options: {
+          data: {
+            full_name: cleanName,
+            student_number: cleanStudentNumber,
+          },
+        },
+      });
 
-    setLoading(false);
+      if (signUpError) {
+        setError(signUpError.message);
+        return;
+      }
+
+      if (data.session) {
+        router.replace("/dashboard");
+        router.refresh();
+        return;
+      }
+
+      setMessage(
+        "Account created successfully. Check your email for confirmation, then sign in to continue."
+      );
+    } catch (err) {
+      console.error("Student sign-up error:", err);
+      setError(
+        "Unable to create the account right now. Please check your connection and try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
