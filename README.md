@@ -16,7 +16,25 @@ ProjectPilot is a full-stack Next.js workspace that takes a college project from
 - AI Project Intelligence: Outcome Predictor, Project DNA, Hidden Dependency Detector, Goal/Scope Drift Detector, Progress Authenticity Analyzer, Multi-Agent Debate, Feature Feasibility, Emergency/Recovery Mode and Personalized Micro-Learning
 - Portfolio analytics and progress visualization
 - Audit events for important project and AI actions
+- Public GitHub repository connection per project, with live repository metadata
+- GitHub connection history stored as project events without storing GitHub passwords or tokens
 - Supabase schema with RLS enabled
+
+## GitHub integration
+The current integration is intentionally **public-repository URL based**:
+
+1. Open a project.
+2. Select **GitHub**.
+3. Paste `https://github.com/owner/repository`.
+4. The server validates the URL and reads public GitHub repository metadata.
+5. The connection is recorded as a project event and can later be used by progress/authenticity agents as additional evidence.
+
+This version does **not** request a GitHub password, personal access token, or private-repository permission. Private repository OAuth can be added later as a separate security-reviewed feature.
+
+## Authentication reliability
+Student login verifies the account role on the server before navigation and then performs a full navigation to the protected workspace. The Next.js `proxy.ts` also refreshes/propagates Supabase auth cookies before protected rendering and fails closed when auth configuration is missing.
+
+Role authorization is always checked on the server. Manually entering `/admin` or `/faculty` never grants access to those dashboards.
 
 ## Environment
 Copy `.env.example` to `.env.local` and configure:
