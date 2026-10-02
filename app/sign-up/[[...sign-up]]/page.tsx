@@ -63,14 +63,42 @@ export default function SignUpPage() {
         return;
       }
 
+      if (!data.user) {
+        setError("The account could not be created. Please try again.");
+        return;
+      }
+
       if (data.session) {
-        router.replace("/dashboard");
+        // Verify the server can see the same session/profile before navigating.
+        // A hard navigation avoids a first-request race with freshly written auth cookies.
+        const roleResponse = await fetch("/api/auth/role", {
+          cache: "no-store",
+          credentials: "include",
+        });
+
+        let roleData: { role?: string; error?: string } = {};
+        try {
+          roleData = await roleResponse.json();
+        } catch {
+          roleData = {};
+        }
+
+        if (!roleResponse.ok || roleData.role !== "student") {
+          await supabase.auth.signOut();
+          setError(
+            roleData.error ||
+              "Account created, but the server could not verify the student profile. Please sign in again."
+          );
+          return;
+        }
+
         router.refresh();
+        window.location.assign("/dashboard");
         return;
       }
 
       setMessage(
-        "Account created successfully. Check your email for confirmation, then sign in to continue."
+        "Account created. Check your email for confirmation, then sign in to continue."
       );
     } catch (err) {
       console.error("Student sign-up error:", err);
@@ -171,14 +199,15 @@ export default function SignUpPage() {
             autoComplete="new-password"
           />
 
-          {error && <div className="auth-error">{error}</div>}
+          {error && <div className="auth-error" role="alert" aria-live="polite">{error}</div>}
 
-          {message && <div className="auth-success">{message}</div>}
+          {message && <div className="auth-success" role="status" aria-live="polite">{message}</div>}
 
           <button
             className="btn btn-primary auth-submit"
             disabled={loading}
             type="submit"
+            aria-busy={loading}
           >
             {loading ? (
               "Creating…"
