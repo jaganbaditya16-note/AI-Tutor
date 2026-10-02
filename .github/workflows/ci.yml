@@ -5,7 +5,7 @@ on:
   pull_request:
     branches: [main]
 jobs:
-  build:
+  quality:
     runs-on: ubuntu-latest
     env:
       NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
@@ -18,5 +18,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - run: npm install
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
       - run: npm run build
