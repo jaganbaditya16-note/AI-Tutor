@@ -27,9 +27,9 @@ export default function SignInPage() {
     setError("");
 
     const cleanEmail = email.trim().toLowerCase();
-    const supabase = createClient();
 
     try {
+      const supabase = createClient();
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: cleanEmail,
         password,
@@ -85,7 +85,9 @@ export default function SignInPage() {
       window.location.assign(safeNext);
     } catch (err) {
       console.error("Student sign-in error:", err);
-      setError("Unable to complete sign in. Please check your connection and try again.");
+      setError(
+        "Unable to complete sign in. Please check your connection and try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -150,12 +152,13 @@ export default function SignInPage() {
             placeholder="••••••••"
           />
 
-          {error && <div className="auth-error">{error}</div>}
+          {error && <div className="auth-error" role="alert" aria-live="polite">{error}</div>}
 
           <button
             className="btn btn-primary auth-submit"
             disabled={loading}
             type="submit"
+            aria-busy={loading}
           >
             {loading ? (
               "Signing in…"
