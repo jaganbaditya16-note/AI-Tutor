@@ -9,7 +9,6 @@ import {
   Zap,
 } from "lucide-react";
 import AppShell from "@/app/components/AppShell";
-import { createClient } from "@/lib/supabase/browser";
 
 type Lesson = {
   title: string;
@@ -30,78 +29,23 @@ export default function MicroLearningPage() {
   useEffect(() => {
     async function loadProject() {
       try {
-        const supabase = createClient();
-
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
-        if (!user) {
-          setError("Please sign in to continue.");
-          setLoading(false);
-          return;
+        const response = await fetch("/api/projects", { cache: "no-store" });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(data.error || "Unable to load your projects.");
         }
 
-        const { data: projects, error: projectError } =
-          await supabase
-            .from("projects")
-            .select("id, title")
-            .eq("user_id", user.id)
-            .order("created_at", {
-              ascending: false,
-            })
-            .limit(1);
-
-        if (projectError) {
-          throw new Error(
-            "Unable to load your project."
-          );
-        }
-
-        const project = projects?.[0];
-
+        const project = Array.isArray(data.projects) ? data.projects[0] : null;
         if (!project) {
-          setError(
-            "Create a project first to receive personalized learning."
-          );
-          setLoading(false);
+          setError("Create a project first to receive personalized learning.");
           return;
         }
 
         setProjectId(project.id);
         setProjectTitle(project.title);
-
-        const response = await fetch(
-          "/api/ai/micro-learning",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              projectId: project.id,
-            }),
-          }
-        );
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(
-            data.error ||
-              "Unable to generate learning."
-          );
-        }
-
-        setLessons(
-          data.learning?.lessons || []
-        );
+        await loadLessons(project.id);
       } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Unable to load personalized learning."
-        );
+        setError(err instanceof Error ? err.message : "Unable to load personalized learning.");
       } finally {
         setLoading(false);
       }
@@ -110,6 +54,19 @@ export default function MicroLearningPage() {
     loadProject();
   }, []);
 
+  async function loadLessons(id: string) {
+    const response = await fetch("/api/ai/micro-learning", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ projectId: id }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || "Unable to generate learning.");
+    }
+    setLessons(Array.isArray(data.learning?.lessons) ? data.learning.lessons : []);
+  }
+
   async function refreshLessons() {
     if (!projectId) return;
 
@@ -117,37 +74,9 @@ export default function MicroLearningPage() {
     setError("");
 
     try {
-      const response = await fetch(
-        "/api/ai/micro-learning",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            projectId,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.error ||
-            "Unable to refresh lessons."
-        );
-      }
-
-      setLessons(
-        data.learning?.lessons || []
-      );
+      await loadLessons(projectId);
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to refresh lessons."
-      );
+      setError(err instanceof Error ? err.message : "Unable to refresh lessons.");
     } finally {
       setLoading(false);
     }
