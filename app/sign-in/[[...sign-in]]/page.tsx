@@ -6,6 +6,7 @@ import {
   ArrowRight,
   LockKeyhole,
   Sparkles,
+  UserPlus,
   Zap,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/browser";
@@ -40,9 +41,6 @@ export default function SignInPage() {
         return;
       }
 
-      // Confirm the server can see the same authenticated session and role.
-      // This prevents a successful client login from landing on a protected
-      // page before the SSR cookie/session has propagated.
       const roleResponse = await fetch("/api/auth/role", {
         cache: "no-store",
         credentials: "include",
@@ -80,8 +78,6 @@ export default function SignInPage() {
           ? next
           : "/dashboard";
 
-      // A hard navigation guarantees the freshly established auth cookies are
-      // used by the Next.js proxy/server components on the first protected request.
       window.location.assign(safeNext);
     } catch (err) {
       console.error("Student sign-in error:", err);
@@ -128,6 +124,12 @@ export default function SignInPage() {
         </div>
         <h2>Welcome back</h2>
         <p>Pick up your project exactly where you left off.</p>
+
+        <Link href="/sign-up" className="btn auth-create-account">
+          <UserPlus size={15} />
+          Create account
+          <ArrowRight size={15} />
+        </Link>
 
         <form onSubmit={submit} className="auth-form">
           <label className="label">Email</label>
